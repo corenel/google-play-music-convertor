@@ -1,16 +1,15 @@
-from utils import parse_arg, parse_music_list
+from utils import parse_arg, parse_music_list, find_music
 
 
 def main():
     """Main sciprt."""
     args = parse_arg()
     music_list = parse_music_list(args.filepath)
-    print(len(music_list))
+    for music in music_list:
+        music_path = find_music(music['filename'], args.dir)
+        print(music_path)
+        break
 
 
 if __name__ == "__main__":
-    collect_types.init_types_collection()
-    collect_types.resume()
     main()
-    collect_types.pause()
-    collect_types.dump_stats('type_info.json')

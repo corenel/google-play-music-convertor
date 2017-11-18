@@ -1,13 +1,10 @@
 import argparse
 import json
+import os
 import glob
-from argparse import Namespace
-from typing import Dict
-from typing import List
 
 
 def parse_arg():
-    # type: () -> Namespace
     """Parse arguments."""
 
     # define arguments
@@ -17,8 +14,14 @@ def parse_arg():
         '--output',
         '-o',
         type=str,
-        default=None,
+        default='/Volumes/Backup/Music/Converted/',
         help='path for output result')
+    parser.add_argument(
+        '--dir',
+        '-d',
+        type=str,
+        default='/Volumes/Backup/iTunes/iTunes Media/',
+        help='path for music folder')
 
     # parse arguments
     args = parser.parse_args()
@@ -28,13 +31,12 @@ def parse_arg():
     print("--- args ---")
     for k, v in args_dict.items():
         print("[{}]: {}".format(str(k), str(v)))
-        print("--- end  ---")
 
+    print("--- end  ---")
     return args
 
 
 def parse_music_list(filepath):
-    # type: (str) -> List[Dict[str, str]]
     """Parse raw music list from Google Play Music.
 
     :filepath: path for json file
@@ -46,12 +48,27 @@ def parse_music_list(filepath):
         return music_list
 
 
-def find_music_file(filename, dirname):
-    """Find file in given directory
+def find_music(filename, dirname):
+    """Find file in given directory.
 
     :filename: name of file to be found
     :dirname: directory to find file
     :returns: absolute path of file
+
+    """
+    os.chdir(dirname)
+    filepath = glob.glob(os.path.join("**", filename), recursive=True)
+    if filename:
+        return os.path.abspath(os.path.join(dirname, filepath[0]))
+    else:
+        return None
+
+
+def convert_music(filepath, outpath):
+    """Convert music into ALAC format with CD quality.
+
+    :filepath: path for music file to be converted
+    :outpath: path for output directory
 
     """
     pass
