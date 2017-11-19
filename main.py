@@ -1,5 +1,5 @@
 from utils import (parse_arg, parse_music_list, find_music, convert_music,
-                   check_dir)
+                   check_dir, check_error)
 
 
 def main():
@@ -15,7 +15,8 @@ def main():
         print('[original path]: {}'.format(filepath))
         # convert music file
         check_dir(args.output)
-        convert_music(filepath, args.output, dry_run=args.dry_run)
+        if check_error(music['error']):
+            convert_music(filepath, args.output, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":

@@ -76,6 +76,16 @@ def check_dir(dirpath):
         os.makedirs(dirpath)
 
 
+def check_error(error):
+    """Check error of Google Play Music.
+
+    :error: error message
+    :returns: if the error is Unsupported ALAC file.
+
+    """
+    return error == 'Unsupported ALAC file'
+
+
 def convert_music(filepath, outdir, dry_run=False):
     """Convert music into ALAC format with CD quality.
 
