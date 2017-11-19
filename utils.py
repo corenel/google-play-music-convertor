@@ -3,6 +3,7 @@ import subprocess
 import json
 import os
 import glob
+import unicodedata
 
 
 def parse_arg():
@@ -34,7 +35,6 @@ def parse_arg():
     for k, v in args_dict.items():
         print("[{}]: {}".format(str(k), str(v)))
 
-    print("--- end  ---")
     return args
 
 
@@ -59,8 +59,9 @@ def find_music(filename, dirname):
 
     """
     os.chdir(dirname)
-    filepath = glob.glob(os.path.join("**", filename), recursive=True)
-    if filename:
+    filename = fix_unicode_kana(filename)
+    filepath = glob.glob(os.path.join('**', filename), recursive=True)
+    if filepath:
         return os.path.abspath(os.path.join(dirname, filepath[0]))
     else:
         return ''
@@ -86,6 +87,32 @@ def check_error(error):
     return error == 'Unsupported ALAC file'
 
 
+def get_outpath(filename, outdir):
+    """Get output filepath.
+
+    :filename: name of music file
+    :outdir: path of output directory
+    :returns: path of converted music file
+
+    """
+    outname = '{}.mp3'.format(os.path.splitext(filename)[0])
+    outpath = os.path.join(outdir, outname)
+    return outpath
+
+
+def fix_unicode_kana(s):
+    """Fix katakana-hiragana voiced sound mark '\u3099' and '\u309a' in string.
+
+    :filepath: string to be fixed
+    :returns: refined string
+
+    """
+    if '\u3099' in s or '\u309a' in s:
+        return ascii(unicodedata.normalize('NFC', s))
+    else:
+        return s
+
+
 def convert_music(filepath, outdir, dry_run=False):
     """Convert music into ALAC format with CD quality.
 
@@ -95,11 +122,7 @@ def convert_music(filepath, outdir, dry_run=False):
     """
     if os.path.exists(filepath):
         filename = os.path.basename(filepath)
-        outpath = os.path.join(outdir, filename)
-        # check if already converted
-        if os.path.exists(outpath):
-            print('pass')
-            return
+        outpath = get_outpath(filename, outdir)
         # command line for xld
         command = 'xld -f mp3 --profile mp3_320 -o "{}" "{}"'.format(
             outpath, filepath)
@@ -111,9 +134,12 @@ def convert_music(filepath, outdir, dry_run=False):
                 stderr=subprocess.PIPE,
                 shell=True)
             output, errors = p.communicate()
-            if output or errors:
+            if p.returncode == 0:
+                print('saved to {}'.format(outpath))
+            else:
                 print('[output]:\n{}'.format(
                     output.decode('utf-8') + errors.decode('utf-8')))
+                print('[command]:\n{}'.format(command))
 
         else:
             print('[command]:\n{}'.format(command))
